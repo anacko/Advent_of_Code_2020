@@ -1,0 +1,48 @@
+TreeMap <- read.table(paste0(getwd(), "/day03.csv"), comment.char="")
+
+TreeMap <- apply(as.vector(TreeMap), 1, function(x){ # By line
+     unlist(strsplit(as.character(x),"")) })         # convert full str to indiv. chars
+
+TreeMap <- t(TreeMap) # 323 lines x 31 cols
+
+TreeMap <- ifelse(TreeMap == "#", 1, 0) # Replace: Trees are 1.
+
+# How many trees if we walk Right 3, Down 1?
+
+# Walking 3: 1 +3= 4 +3= 7 +3= 10 +3= 13...
+IsTree_R3D1 <- rep(NA, nrow(TreeMap))
+for (i in 1:nrow(TreeMap)) {
+     j = (3*(i-1)+1) %% ncol(TreeMap)     # Remainder of div: posit 43 if num cols is 20, is col 3.
+     j = ifelse(j == 0, ncol(TreeMap), j) # But remainder is zero if posit is 40, which is col 20.
+     IsTree_R3D1[i] <- TreeMap[i,j] }
+
+print(sum(IsTree_R3D1))
+
+# With different patterns, multiply them all
+
+nTrees <- function (map = TreeMap, StepRight, StepDown) {
+     IsTree <- NULL
+     total_k <- nrow(map)%/% StepDown
+     
+     for (k in 1:total_k) {
+          i = (k-1)*StepDown +1
+          j = ((k-1)*StepRight +1) %% ncol(map)
+          j = ifelse(j == 0, ncol(map), j)
+          IsTree[k] <- map[i,j]     }
+     
+     return(sum(IsTree)) }
+
+nTrees(TreeMap, 1, 1)* # 64
+nTrees(TreeMap, 3, 1)* # 284
+nTrees(TreeMap, 5, 1)* # 71
+nTrees(TreeMap, 7, 1)* # 68
+nTrees(TreeMap, 1, 2)  # 40
+
+# Extra: How is the minimum right and down for zero trees
+
+for (StepDown in 1:20) {
+for (StepRight in 1:31) {
+     if(nTrees(TreeMap, StepRight, StepDown)==0) print(paste0(
+          "No Trees is: Right ", StepRight, ", Down ",StepDown)) }}
+
+nTrees(StepRight = 6,StepDown = 18)
