@@ -1,0 +1,74 @@
+Passport_batch <- scan(file = paste0(getwd(), "/day04.csv"), what = 'list',#sep = '\n',
+                       blank.lines.skip = FALSE)
+
+print(Passport_batch[1:10])
+
+keys <- unique(gsub(":.*", "", Passport_batch))
+keys <- sort(keys)
+keys <- keys[-1] #removes the blank value
+print(keys)
+
+Passport <- data.frame(matrix(ncol = length(keys), 
+                              nrow = sum(Passport_batch=="")+1 ))
+names(Passport) <- c(keys)
+rm(keys)
+
+i <- 1
+for (k in 1:length(Passport_batch)) {
+    if (Passport_batch[k] == "") { 
+        i <- i+1
+    } else {
+        jName <- gsub(":.*", "", Passport_batch[k])    # before ":"
+        celValue <- gsub(".*:", "", Passport_batch[k]) # after ":"
+        Passport[i, jName] <- celValue 
+    } }
+
+rm(i, k, jName, celValue)
+rm(Passport_batch)
+
+print(Passport[1:5,])
+
+# How many passports are valid?
+# Part 1: Valid is with entry in all fields, but "cid" is an optional field.
+
+sum(complete.cases(Passport[,names(Passport) != 'cid']))
+
+# Part 2: More validation criteria, and "cid" is ignored.
+
+Passport_val <- Passport
+Passport_val[,] <- NA
+
+Passport_val$byr <- ifelse((Passport$byr >= 1920 & Passport$byr <= 2002), 1, 0)
+Passport_val$iyr <- ifelse((Passport$iyr >= 2010 & Passport$iyr <= 2020), 1, 0)
+Passport_val$eyr <- ifelse((Passport$eyr >= 2020 & Passport$eyr <= 2030), 1, 0)
+
+Passport_val$hgt <- sapply(Passport$hgt, function(x){
+    size = nchar(x)
+    ending = substr(x, size-1, size)
+    beginning = as.numeric(substr(x, 1, size-2))
+    ifelse((ending == "cm" & beginning >= 150 & beginning <= 193)|
+           (ending == "in" & beginning >= 59 & beginning <= 76),    1, 0) 
+    })
+
+Passport_val$hcl <- sapply(Passport$hcl, function(x){
+    size = nchar(x)
+    firstChar = substr(x, 1, 1)
+    hexaChar = substr(x, 2, size)
+    ValidhexaChar = unlist(strsplit(hexaChar, "")) %in% c(0:9, "a", "b","c", "d", "e", "f")
+    nValid = sum(ValidhexaChar)
+    ifelse(firstChar == "#" & nValid == 6, 1, 0) 
+    })
+
+Passport_val$ecl <- ifelse(Passport$ecl %in% c("amb", "blu", "brn", "gry", "grn", "hzl", "oth"), 
+                           1, 0)
+
+Passport_val$pid <- sapply(Passport$pid, function(x){
+    ValidNumber = unlist(strsplit(x, "")) %in% c(0:9)
+    nValid = sum(ValidNumber)
+    ifelse(nValid == 9, 1, 0) 
+    })
+
+Passport_val[1:5,]
+
+nValidCriteria <- apply(Passport_val, 1, function(x) sum(x, na.rm = TRUE))
+sum(nValidCriteria == 7) # how many passport codes have all 7 criteria as valid
