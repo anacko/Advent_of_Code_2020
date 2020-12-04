@@ -1,0 +1,18 @@
+Expenses <- read.table(paste0(getwd(), "/day01.csv"), quote="\"", comment.char="")
+Expenses <- as.vector(Expenses[,1])
+
+# Part 1: What is the product of the two numbers that sum 2020?
+for (j in 1:length(Expenses)) {
+for (i in 1:length(Expenses)) {
+     a <- Expenses[i]
+     b <- Expenses[j]
+     if (a + b == 2020) print(paste0(a, " x ", b, " = ", a*b)) }}
+
+# Part 2: What is the product of the three numbers that sum 2020?
+for (k in 1:length(Expenses)) {
+     for (j in 1:length(Expenses)) {
+          for (i in 1:length(Expenses) ){
+               a <- Expenses[i]
+               b <- Expenses[j]
+               c <- Expenses[k]
+               if (a + b + c == 2020) print(paste0(a, " x ", b, " x ", c, " = ", a*b*c)) }}}
