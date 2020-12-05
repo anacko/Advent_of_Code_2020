@@ -1,0 +1,48 @@
+BinCode <- read.table("day05.csv", quote="", comment.char="", stringsAsFactors=FALSE)
+BinCode <- unlist(BinCode)
+
+RowCode <- sapply(BinCode, function(x) substr(x, 1, 7))
+ColCode <- sapply(BinCode, function(x) substr(x, 8, 10))
+
+print(BinCode[1:5])
+print(RowCode[1:5])
+print(ColCode[1:5])
+
+# Transforming Codes to Numbers: n positions. Each position is:
+# Letter 1 (first categ.): 0 or 2^(n-1)
+# Letter 2 (second categ): 0 or 2^(n-2)
+# Letter n (last categ.) : 0 or 2^(n-n)
+
+CodeToNumber <- function(x) {
+    
+    CharValues <- rep(NA, nchar(x))
+    
+    for (k in 1:nchar(x)) {
+        CharVal = unlist(strsplit(x, ""))[k]
+        BinVal = ifelse(CharVal == "B" | CharVal == "R", 1, 0)
+        RelVal = BinVal*(2^(nchar(x)-k))
+        CharValues[k] <- RelVal }
+
+    return (sum(CharValues)) }
+
+RowNumber <- sapply(RowCode, CodeToNumber)
+ColNumber <- sapply(ColCode, CodeToNumber)
+
+print(RowNumber[1:5])
+print(ColNumber[1:5])
+
+# What is the highest seat ID?
+SeatID <- RowNumber*8 + ColNumber
+max(SeatID)
+
+# What is your seat?
+# Full flight, no extreme seats
+
+Seats <- table(RowNumber, ColNumber)
+Seats[62:66,] # Empty Seat is: Row 71, Col 1.
+
+Seats_df <- data.frame(Seats)
+MissingSeats <- Seats_df[Seats_df$Freq == 0, ]
+MissingSeats[order(MissingSeats$RowNumber),]
+
+71*8 +1 # Empty Seat ID = row*8 + col
