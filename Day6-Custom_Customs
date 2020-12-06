@@ -1,0 +1,43 @@
+Answers_csv <- scan(file = paste0(getwd(), "/day06.csv"), what = 'list',#sep = '\n',
+                       blank.lines.skip = FALSE)
+
+Answers <- data.frame(Group = rep(NA, sum(Answers_csv!="")), Individual = NA, YesForQuestion = NA)
+
+Answers$YesForQuestion <- Answers_csv[Answers_csv!=""]
+Answers$YesForQuestion <- as.character(Answers$YesForQuestion)
+
+i = 1
+GroupNumber = 1
+IndivNumber = 0
+for (k in 1:length(Answers_csv)) {
+    
+    GroupNumber <- ifelse(Answers_csv[k] == "", GroupNumber+1, GroupNumber)
+    IndivNumber <- ifelse(Answers_csv[k] != "", IndivNumber+1, 0)    
+    
+    Answers$Group[i] = GroupNumber
+    Answers$Individual[i] = IndivNumber  
+
+    i <- ifelse(Answers_csv[k] != "", i+1, i)
+}
+
+# How many questions are Yes for each group?
+
+nYesForQuestion <- rep(NA, max(Answers$Group))
+for (k in 1:max(Answers$Group)) {
+    kRange <- which(Answers$Group == k)
+    AllAnswers <- unlist(strsplit(Answers$YesForQuestion[kRange], ""))
+    nYesForQuestion[k] <- length(unique(AllAnswers))
+}
+
+sum(nYesForQuestion)
+
+# How many questions are Yes by all individuals in each group?
+
+nAllYesForQuestion <- rep(NA, max(Answers$Group))
+for (k in 1:max(Answers$Group)) {
+    kRange <- which(Answers$Group == k)
+    AllYes <- Reduce(intersect,strsplit(Answers$YesForQuestion[kRange], ""))
+    nAllYesForQuestion[k] <- length(AllYes)
+}
+
+sum(nAllYesForQuestion)
