@@ -46,3 +46,15 @@ MissingSeats <- Seats_df[Seats_df$Freq == 0, ]
 MissingSeats[order(MissingSeats$RowNumber),]
 
 71*8 +1 # Empty Seat ID = row*8 + col
+
+# Alternative with data.frame
+
+AllSeats <- data.frame(RowCode = RowCode, ColCode = ColCode, 
+                       RowNumber = RowNumber, ColNumber = ColNumber,
+                       SeatID = SeatID)
+AllSeats <- AllSeats[order(AllSeats$SeatID),]
+
+AllSeats[diff(AllSeats$SeatID) == 2,] # Before missing seat
+AllSeats[which(diff(AllSeats$SeatID) == 2)+1,] # After missing seat
+
+AllSeats$SeatID[diff(AllSeats$SeatID) == 2] + 1 # Code Of missing Seat
