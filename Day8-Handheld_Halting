@@ -1,0 +1,83 @@
+Order <- read.table("day08.csv", quote="", comment.char="", stringsAsFactors=FALSE)
+names(Order) <- c('Cmd', 'Value')
+
+# What is the value on the Accumulator before starts the repetition?
+Accumulator <- 0
+i <- 1
+steps <- i
+
+while(length(unique(duplicated(steps)))==1) {
+    if (Order$Cmd[i] == "nop") {
+        i <- i+1
+    } else {
+    if (Order$Cmd[i] == "jmp") {
+        i <- i + Order$Value[i]
+    } else {
+    if (Order$Cmd[i] == "acc") {
+        Accumulator <- Accumulator + Order$Value[i]
+        i <- i+1
+    }    }    }
+    steps <- c(steps, i)    
+}
+
+Accumulator
+
+# Change 1 nop->jmp or 1 jmp->nop. The program terminates normally.
+# What is the value on the accumulator?
+
+RunSteps <- function (x = Order) {
+    Accumulator <- 0
+    i <- 1
+    steps <- i
+    
+    while(length(unique(duplicated(steps)))==1) {
+        if (x$Cmd[i] == "nop") {
+            i <- i+1
+        } else {
+            if (x$Cmd[i] == "jmp") {
+                i <- i + x$Value[i]
+            } else {
+                if (x$Cmd[i] == "acc") {
+                    Accumulator <- Accumulator + x$Value[i]
+                    i <- i+1
+                }    }    }
+        steps <- c(steps, i)  
+        if(i == nrow(x)){
+            break
+        }
+    }
+    return(c(i, length(steps), Accumulator))
+}
+RunSteps()
+
+ReplJMP <- data.frame(i = rep(NA, sum(Order$Cmd == "jmp")), nSteps = NA, Acc = NA)
+k <- 1
+for (i in which(Order$Cmd == "jmp")) {
+    Order_temp <- Order
+    Order_temp$Cmd[i] <- "nop"
+    StepsRun <- RunSteps(x = Order_temp)
+    ReplJMP$i[k] <- StepsRun[1]
+    ReplJMP$nSteps[k] <- StepsRun[2]
+    ReplJMP$Acc[k] <- StepsRun[3]
+    k <- k+1 }
+ReplJMP[ReplJMP$i == nrow(Order),] 
+
+# Last line 608 is reached after 73 steps, the Accumulator value is 640.
+Order_Corrected <- Order
+LineToRepl <- which(Order$Cmd == "jmp")[142]
+Order_Corrected$Cmd[LineToRepl] <- "nop"
+
+RunSteps(Order_Corrected)
+
+#Switching nop -> jmp
+ReplNOP <- data.frame(i = rep(NA, sum(Order$Cmd == "nop")), nSteps = NA, Acc = NA)
+k <- 1
+for (i in which(Order$Cmd == "nop")) {
+    Order_temp <- Order
+    Order_temp$Cmd[i] <- "jmp"
+    StepsRun <- RunSteps(x = Order_temp)
+    ReplNOP$i[k] <- StepsRun[1]
+    ReplNOP$nSteps[k] <- StepsRun[2]
+    ReplNOP$Acc[k] <- StepsRun[3]
+    k <- k+1 }
+ReplNOP[ReplNOP$i == nrow(Order),] # not found: meaning that no switch nop->jmp will make the run.
