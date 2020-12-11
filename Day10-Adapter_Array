@@ -1,0 +1,52 @@
+Adapters <- read.table("day10.csv")
+Adapters <- as.vector(Adapters[,1])
+
+Nodes <- c(0, Adapters, max(Adapters)+3) # Insert begin 0 and ending +3
+
+# PART 1: How much is the amount of Jumps 1 x Jumps 3 ?
+Nodes <- sort(Nodes)
+Jumps <- diff(Nodes)
+table(Jumps)
+table(Jumps)[1] * table(Jumps)[2]
+
+# PART 2: How many different arrangements are possible?
+
+# Counts occurrences in the seq of differences(Jumps)
+J <- Jumps[1] # First difference value
+S <- NULL     # size of the sequence of same differences
+S_temp <- 1
+for (k in 2:length(Jumps)) {
+    if (Jumps[k]==Jumps[k-1]) {
+        S_temp <- S_temp+1
+    } else {
+        S <- c(S, S_temp)
+        J <- c(J, Jumps[k])
+        S_temp <- 1
+    }
+}
+S[length(S)+1] <- S_temp # fills last info of repeated differences
+
+max(S) #max sequence is 5 (max diff=1 is of 4)
+
+# Sequences of differences of 1 unit:
+# For 1 difference -> 0 possibility (313 -> no variation: AB)
+# For 2 differences -> 2 possibilities (3113 -> removes middle number: ex. ABC, AC)
+# For 3 differences -> 4 possibilities (31113: ABCD, ACD, ABD, AD)
+# For 4 differences -> 7 possibilities (311113: ABCDE, ACDE, ABDE, ABCE, ADE, ACE, ABE)
+
+P <- rep(NA, length(S))
+for (i in 1:length(S)) {
+    if(J[i]==1 & S[i]==4) {
+        P[i] = 7
+    } else {
+    if(J[i]==1 & S[i]==3) {
+        P[i] = 4
+    } else {
+    if(J[i]==1 & S[i]==2) {
+        P[i] = 2
+    } else {
+        P[i] = 0
+    } } }
+}
+P[P!=0] # Only non-zero possibilities count... 
+prod(P[P!=0]) # Product = 74049191673856
