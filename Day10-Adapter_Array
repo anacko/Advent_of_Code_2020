@@ -29,7 +29,7 @@ S[length(S)+1] <- S_temp # fills last info of repeated differences
 max(S) #max sequence is 5 (max diff=1 is of 4)
 
 # Sequences of differences of 1 unit:
-# For 1 difference -> 0 possibility (313 -> no variation: AB)
+# For 1 difference -> 1 possibility (313 -> no variation: AB)
 # For 2 differences -> 2 possibilities (3113 -> removes middle number: ex. ABC, AC)
 # For 3 differences -> 4 possibilities (31113: ABCD, ACD, ABD, AD)
 # For 4 differences -> 7 possibilities (311113: ABCDE, ACDE, ABDE, ABCE, ADE, ACE, ABE)
@@ -45,8 +45,8 @@ for (i in 1:length(S)) {
     if(J[i]==1 & S[i]==2) {
         P[i] = 2
     } else {
-        P[i] = 0
+        P[i] = 1
     } } }
 }
-P[P!=0] # Only non-zero possibilities count... 
-prod(P[P!=0]) # Product = 74049191673856
+P #Sequence of possibilities
+prod(P) # Product = 74049191673856
