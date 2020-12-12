@@ -3,7 +3,7 @@ EmptySeats <- as.vector(EmptySeats[,1])
 
 SeatMap <- matrix(data = NA, nrow = length(EmptySeats)+2, ncol = nchar(EmptySeats[1])+2)
 
-for (i in 1:(nrow(SeatMap)-1)) {    # Keeps 1st and last line NA.
+for (i in 1:(nrow(SeatMap)-2)) {    # Keeps 1st and last line NA.
     SeatMap[i+1,] <- c(NA, unlist(strsplit(EmptySeats[i], "")), NA)
 }
 
@@ -57,7 +57,7 @@ sum(ChangeState(StateB), na.rm = TRUE)
 # PART 2: New Rules, same question!
 
 SeatVision <- function(data, i, j) {
-#' Returns what is seen at the (i, j) position, in each of the 8 directions
+# Returns what is seen at the (i, j) position, in each of the 8 directions
 
     Fr <- data[(i-1):1, j] # look front
     Bk <- data[(i+1):nrow(data), j] # look back
