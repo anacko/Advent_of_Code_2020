@@ -1,0 +1,104 @@
+Instructions <- read.table("day12.csv")
+Instructions <- as.vector(Instructions[,1])
+
+Steps <- data.frame(Direction = rep(NA, length(Instructions)), n = NA)
+
+Steps$Direction <- unname(sapply(Instructions, function(x) substr(x,1,1)))
+
+Steps$n <- unname(sapply(Instructions, function (x) substr(x, 2, nchar(x))))
+Steps$n <- as.numeric(Steps$n)
+
+NumberDir <- data.frame(AbsDirection = c("N", "E", "S", "W"), DegreeVal = c(0, 90, 180, 270))
+
+TurnEngines <- function(FirstDirection, TurnDirection, TurnDegree) {
+    FaceN <- NumberDir$DegreeVal[NumberDir$AbsDirection == FirstDirection]
+    TurnDegree <- ifelse(TurnDirection == "R", TurnDegree, -TurnDegree)
+    FaceN <- (FaceN + TurnDegree)%%360
+    FaceD <- NumberDir$AbsDirection[NumberDir$DegreeVal == FaceN]
+    NewDirection <- as.character(FaceD)
+    
+    return(NewDirection) 
+    }
+
+Steps$Face <- "E"
+for (i in 2:nrow(Steps)) {
+    if(Steps$Direction[i] == "R") {
+        Steps$Face[i] <- TurnEngines(Steps$Face[i-1], "R", Steps$n[i])
+    } else {
+    if(Steps$Direction[i] == "L") {
+        Steps$Face[i] <- TurnEngines(Steps$Face[i-1], "L", Steps$n[i])
+    } else {
+        Steps$Face[i] <- Steps$Face[i-1]
+    }}
+}
+
+RelativeSteps <- Steps$Direction %in% c("F", "L", "R")
+Steps$AbsDirection <- Steps$Direction
+Steps$AbsDirection[RelativeSteps] <- Steps$Face[RelativeSteps]
+
+Steps$AbsN <- Steps$n
+Steps$AbsN[Steps$Direction == "L"] <- 0
+Steps$AbsN[Steps$Direction == "R"] <- 0
+
+# PART 1: Manhattan Distance of the trajectory
+TotVert <- sum(Steps$AbsN[Steps$AbsDirection == "N"]) - sum(Steps$AbsN[Steps$AbsDirection == "S"])
+TotHoriz <- sum(Steps$AbsN[Steps$AbsDirection == "E"]) - sum(Steps$AbsN[Steps$AbsDirection == "W"])
+abs(TotVert)+abs(TotHoriz)
+
+# PART 2: New Rules, a Wild Waypoint appears!
+
+Actions <- rbind(c("E",0),Steps[,1:2])
+Actions$n <- as.integer(Actions$n)
+
+Actions$WpPosition_NS <- 1
+Actions$WpPosition_EW <- 10
+
+Actions$ShipPosition_NS <- 0
+Actions$ShipPosition_EW <- 0
+
+# Rotation: ex. 90 right: 10 N, 5 East (10,5) -> 10 E , 5 S (-5,10)
+TurnWaypoint <- function(NS, EW, TurnDirection, TurnDegree) {
+    
+    NSEW <- c(NS, EW)
+    Turns <- TurnDegree %/% 90
+    for (k in 1:Turns) {
+        if(TurnDirection == "R"){
+            NSEW <- c(-NSEW[2], NSEW[1])
+        } else { # TurnDirection == "L"
+            NSEW <- c(NSEW[2], -NSEW[1])
+        } }
+    
+    return(NSEW) 
+}
+
+for (i in 2:nrow(Actions)) {
+    if(Actions$Direction[i] == "N"){
+        Actions$WpPosition_NS[i:nrow(Actions)] <- Actions$WpPosition_NS[i-1] + Actions$n[i]
+    } else {
+    if(Actions$Direction[i] == "S"){
+        Actions$WpPosition_NS[i:nrow(Actions)] <- Actions$WpPosition_NS[i-1] - Actions$n[i]
+    } else {
+    if(Actions$Direction[i] == "E"){
+        Actions$WpPosition_EW[i:nrow(Actions)] <- Actions$WpPosition_EW[i-1] + Actions$n[i]
+    } else {
+    if(Actions$Direction[i] == "W"){
+        Actions$WpPosition_EW[i:nrow(Actions)] <- Actions$WpPosition_EW[i-1] - Actions$n[i]
+    } else {
+    if(Actions$Direction[i] %in% c("L","R")){
+        NSEW <- TurnWaypoint(Actions$WpPosition_NS[i-1], Actions$WpPosition_EW[i-1],
+                             Actions$Direction[i], Actions$n[i])
+        Actions$WpPosition_NS[i:nrow(Actions)] <- NSEW[1]
+        Actions$WpPosition_EW[i:nrow(Actions)] <- NSEW[2]
+    } else {
+    if(Actions$Direction[i] == "F") {
+        Actions$ShipPosition_NS[i:nrow(Actions)] <- Actions$ShipPosition_NS[i-1] +
+                                                    Actions$n[i] * Actions$WpPosition_NS[i]
+        Actions$ShipPosition_EW[i:nrow(Actions)] <- Actions$ShipPosition_EW[i-1] +
+                                                    Actions$n[i] * Actions$WpPosition_EW[i]
+    } else {
+        print(paste0("Unexpected action in line ", i))
+    }}}}}}
+}
+
+Actions[nrow(Actions),] # Final State
+sum(abs(Actions$ShipPosition_NS[nrow(Actions)]), abs(Actions$ShipPosition_EW[nrow(Actions)]))
