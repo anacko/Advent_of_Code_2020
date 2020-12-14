@@ -1,0 +1,16 @@
+Shuttles <- read.table("day13.csv")
+MyTime <- as.integer(as.character(Shuttles[1,1]))
+
+BusLines <- unlist(strsplit(as.vector(Shuttles[2,1]), ","))
+BusLines <- BusLines[BusLines != "x"]
+BusLines <- as.integer(BusLines)
+
+# When is the next bus?
+TimeSinceLastBus <- MyTime %% BusLines
+TimeToNextBus <- BusLines - TimeSinceLastBus
+
+min(TimeToNextBus) # Next departure
+BusLines[TimeToNextBus == min(TimeToNextBus)] # Line of next departure
+
+print(BusLines[TimeToNextBus == min(TimeToNextBus)] * min(TimeToNextBus))
+###
