@@ -1,0 +1,72 @@
+Tickets_and_Rules <- read.csv("day16.csv", sep = "\n",header = FALSE)
+
+Rules <- data.frame(FullInfo = Tickets_and_Rules[1:20,], Info = NA, Range1 = NA, Range2 = NA)
+
+Rules[,2:4] <- t(sapply(Rules[,1], function(x){ # populates Info, Range1 and Range2
+    unlist(strsplit(unlist(strsplit(as.character(x),": ")), " or ")) })) 
+
+MakeRange <- function(x) {
+    Range <- as.integer(unlist(strsplit(x, "-")))
+    RangeStr <- toString(Range[1]:Range[2])
+    return(RangeStr)
+}
+Rules$Valids1 <- sapply(Rules$Range1, MakeRange)
+Rules$Valids2 <- sapply(Rules$Range2, MakeRange)
+Rules$Valids <- paste(Rules$Valids1, Rules$Valids2, sep = ", ")
+
+Rules <- Rules[,c('Info', 'Valids')] # Keeps only Category Info and Valid Values (as string)
+
+MyTicket <- as.character(Tickets_and_Rules[22,])
+MyTicket <- unlist(strsplit(MyTicket, ","))
+MyTicket <- as.integer(MyTicket) # My Ticket values
+
+NearTickets <- Tickets_and_Rules[24:nrow(Tickets_and_Rules),]
+NearTickets <- sapply(NearTickets, function(x){ # Tickets by Col
+    x <- as.character(x)
+    x <- unlist(strsplit(x, ","))
+    x <- as.integer(x)
+})
+
+# Part 1: Adding up all invalid numbers in nearby tickets
+
+AllValidNumbers <- as.integer(unlist(strsplit(Rules$Valids, ", ")))
+
+sum(NearTickets[!(NearTickets %in% AllValidNumbers)]) # All Invalid Numbers in Nearby Tickets
+
+# Part 2: Seeing my ticket info
+
+ValidTicketsNumbers <- NULL
+for (j in 1:ncol(NearTickets)) {
+    ValidTicketsNumbers[j] <- ifelse(sum(NearTickets[,j] %in% AllValidNumbers) == 20, 
+                                  j, #if valid, adds the valid ticket
+                                  NA) }
+ValidTicketsNumbers <- ValidTicketsNumbers[!is.na(ValidTicketsNumbers)]
+ValidTickets <- NearTickets[,ValidTicketsNumbers]
+
+FindValidFields <- function(RowTest) {
+    
+    isValid <- NULL
+    for (i in 1:nrow(Rules)) {
+        Reference <- as.integer(unlist(strsplit(Rules$Valids[i], ", ")))
+        isValid[i] <- ifelse(sum(RowTest %in% Reference) == length(RowTest), Rules$Info[i], NA)
+    }
+    isValid <- isValid[!is.na(isValid)]
+    
+    return(isValid)
+}
+
+NumberValidFields <- NULL
+for (i in 1:20) {  NumberValidFields[i] <- length(FindValidFields(ValidTickets[i,])) }
+
+NamesValidFields <- rep(NA, 20)
+OldFields <- NULL
+for (i in 1:20) {
+    AllFields <- FindValidFields(ValidTickets[which(NumberValidFields == i),])
+    NewField <- AllFields[!(AllFields %in% OldFields)]
+    NamesValidFields[which(NumberValidFields == i)] <- NewField
+    OldFields <- c(OldFields, NewField)
+}
+print(matrix(c(NamesValidFields, MyTicket), ncol = 2)) # My Ticket Info!
+
+DepartureIndexes <- which(substr(NamesValidFields, 1, 9) == "departure")
+format(prod(MyTicket[DepartureIndexes]), scientific = FALSE)
