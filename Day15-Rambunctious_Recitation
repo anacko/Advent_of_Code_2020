@@ -1,0 +1,36 @@
+StNb <- read.csv("day15.csv", sep = ",", header = FALSE)
+StNb <- as.integer(StNb[1,])
+
+X <- StNb
+n <- length(X)
+
+# Part 1: Position 2020
+while (n < 2020) {
+    if (X[n] %in% X[1:(n-1)]) {
+        LastPos <- max(which(X[n] == X[1:(n-1)]))
+        X[n+1] <- n - LastPos
+        n <- length(X)
+    } else {
+        X[n+1] <- 0
+        n <- length(X)
+    }}
+
+X[n]
+
+# Part 2: Position 30 MIL - Many Thanks to Amintor Dusko, teaching his SuperSpeed code techniques!
+X <- rep(0, 30000000)
+X[StNb+1] <- 1:length(StNb)
+NextN <- 0
+
+for (n in 7:(30000000-1)) {
+
+    if(X[NextN+1] == 0){
+        X[NextN+1] <- n
+        NextN <- 0
+    } else {
+        DifN <- n - X[NextN+1]
+        X[NextN+1] <- n
+        NextN <- DifN
+    }
+}
+format(NextN, scientific = FALSE)
