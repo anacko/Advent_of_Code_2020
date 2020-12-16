@@ -1,0 +1,69 @@
+Codes <- read.table("day14.csv")
+
+MakeBinary <- function(x) {
+    Binary <- NULL
+    
+    while (x>1) {
+        Btemp <- x%%2
+        Binary <- c(Btemp, Binary)
+        x <- x%/%2
+    }
+    
+    Binary <- c(1, Binary)
+    
+    return(Binary)
+}
+
+CodeValues <- Codes$V3[Codes$V1 != "mask"]
+CodeValues <- as.integer(as.character(CodeValues))
+
+BinaryBefore <- sapply(CodeValues, MakeBinary)
+
+BinaryBefore <- lapply(BinaryBefore, function(x) {
+    FullBinary <- c(rep(0, nchar(as.character(Codes$V3[1])) - length(x)), x)
+    gsub(", ","",toString(FullBinary))
+})
+
+BinaryBefore <- unlist(BinaryBefore)
+
+Codes$BinaryBefore <- NA
+Codes$BinaryBefore[Codes$V1!="mask"] <- BinaryBefore
+
+# Passing a mask:
+PassMask <- function(mask, BinaryBefore) {
+    mask <- as.character(mask)
+    mask <- unlist(strsplit(mask, ""))
+    BinaryAfter <- mask
+    BinaryAfter[mask == "X"] <- unlist(strsplit(BinaryBefore[1], ""))[mask == "X"]
+    BinaryAfter <- gsub(", ", "", toString(BinaryAfter))
+    return(BinaryAfter)
+}
+
+Codes$BinaryAfter <- NA
+for (i in 1:nrow(Codes)) {
+    if(Codes$V1[i] == "mask") {
+        mask <- Codes$V3[i]
+    } else {
+        Codes$BinaryAfter[i] <- PassMask(mask, Codes$BinaryBefore[i])
+    }
+}
+
+MakeDecimal <- function(x) {
+    x <- unlist(strsplit(x, ""))
+    x <- rev(as.numeric(x))
+    pos1 <- which(x==1)
+    n <- sum(2^(pos1-1))
+    return(n)
+}
+
+BinaryAfter <- Codes$BinaryAfter[Codes$V1!="mask"]
+DecimalAfter <- sapply(BinaryAfter, MakeDecimal)
+
+BinaryBefore <- unlist(BinaryBefore)
+
+Codes$DecimalAfter <- NA
+Codes$DecimalAfter[Codes$V1!="mask"] <- DecimalAfter
+
+Codes$ValidValues <- !duplicated(Codes$V1, fromLast = TRUE)
+
+format(sum(Codes$DecimalAfter[Codes$ValidValues], na.rm = TRUE), scientific = FALSE)
