@@ -1,0 +1,113 @@
+Oper <- read.csv("day18.csv", sep = "\n",header = FALSE)
+Oper <- as.character(Oper[,1])
+
+CalculateExpression <- function(CurrOp) {
+
+    CurrOp <- gsub(" ", "", CurrOp)
+    CurrOp <- unlist(strsplit(CurrOp, ""))
+
+    while (length(CurrOp)>1 ) {
+
+        PosOpen <- which(CurrOp == "(")
+        PosClose <- which(CurrOp == ")")
+
+        n <- length(PosOpen)
+
+        InnerClose <- ifelse(n==0, length(CurrOp), min(PosClose)-1)
+        InnerOpen <- ifelse(n==0, 1, max(PosOpen[PosOpen < min(PosClose)])+1)
+
+        InnerOp <- CurrOp[InnerOpen:InnerClose]
+        
+        while (length(InnerOp) > 1) {
+            CurrRes <- ifelse(InnerOp[2] == "+", as.numeric(InnerOp[1])+as.numeric(InnerOp[3]), 
+                                                 as.numeric(InnerOp[1])*as.numeric(InnerOp[3]))
+            if (length(InnerOp)>=4) {
+                InnerOp <- c(as.character(CurrRes), InnerOp[4:length(InnerOp)])
+            } else {
+                InnerOp <- as.character(CurrRes)
+            }
+        }
+
+        if (InnerOpen == 1 & InnerClose == length(CurrOp)) {
+            CurrOp <- as.character(CurrRes)
+        } else {
+        if ((InnerClose+1)==length(CurrOp)) {
+            CurrOp <- c(CurrOp[1:(InnerOpen-2)], as.character(CurrRes))
+        } else {
+        if ((InnerOpen-1)==1) {
+            CurrOp <- c(as.character(CurrRes), CurrOp[(InnerClose+2):length(CurrOp)])
+        } else {
+            CurrOp <- c(CurrOp[1:(InnerOpen-2)], as.character(CurrRes), CurrOp[(InnerClose+2):length(CurrOp)])   
+        }}}
+    }
+
+    FinalResult <- as.numeric(CurrRes)
+    return(FinalResult) 
+}
+
+ResultsOper <- rep(NA, length(Oper))
+ResultsOper <- unname(sapply(Oper, CalculateExpression))
+format(sum(ResultsOper), scientific = FALSE)
+
+# Part 2: New math rules
+
+CalculateExpressionUnderNewRules <- function(CurrOp) {
+    
+    CurrOp <- gsub(" ", "", CurrOp)
+    CurrOp <- unlist(strsplit(CurrOp, ""))
+    
+    while (length(CurrOp)>1 ) {
+        
+        PosOpen <- which(CurrOp == "(")
+        PosClose <- which(CurrOp == ")")
+        
+        n <- length(PosOpen)
+        
+        InnerClose <- ifelse(n==0, length(CurrOp), min(PosClose)-1)
+        InnerOpen <- ifelse(n==0, 1, max(PosOpen[PosOpen < min(PosClose)])+1)
+        
+        InnerOp <- CurrOp[InnerOpen:InnerClose]
+        
+        while (length(InnerOp) > 1) {
+            Multies <- which(InnerOp == "*")
+            Addies <- which(InnerOp == "+")
+            
+            ThisFirst <- ifelse(length(Addies) == 0, min(Multies), min(Addies))
+            
+            CurrRes <- ifelse(InnerOp[ThisFirst] == "+", 
+                              as.numeric(InnerOp[ThisFirst-1])+as.numeric(InnerOp[ThisFirst+1]), 
+                              as.numeric(InnerOp[ThisFirst-1])*as.numeric(InnerOp[ThisFirst+1]))
+            
+            if (length(InnerOp)<4) {
+                InnerOp <- as.character(CurrRes)
+            } else {
+            if (ThisFirst == 2) {
+                InnerOp <- c(as.character(CurrRes), InnerOp[(ThisFirst+2):length(InnerOp)])
+            } else {
+            if (ThisFirst == (length(InnerOp)-1)) {
+                InnerOp <- c(InnerOp[1:(ThisFirst-2)], as.character(CurrRes))
+            } else {
+                InnerOp <- c(InnerOp[1:(ThisFirst-2)], as.character(CurrRes), InnerOp[(ThisFirst+2):length(InnerOp)])
+            }}}
+        }
+        
+        if (InnerOpen == 1 & InnerClose == length(CurrOp)) {
+            CurrOp <- as.character(CurrRes)
+        } else {
+        if ((InnerClose+1)==length(CurrOp)) {
+            CurrOp <- c(CurrOp[1:(InnerOpen-2)], as.character(CurrRes))
+        } else {
+        if ((InnerOpen-1)==1) {
+            CurrOp <- c(as.character(CurrRes), CurrOp[(InnerClose+2):length(CurrOp)])
+        } else {
+            CurrOp <- c(CurrOp[1:(InnerOpen-2)], as.character(CurrRes), CurrOp[(InnerClose+2):length(CurrOp)])   
+        }}}
+    }
+    
+    FinalResult <- as.numeric(CurrRes)
+    return(FinalResult) 
+}
+
+ResultsNewOper <- rep(NA, length(Oper))
+ResultsNewOper <- unname(sapply(Oper, CalculateExpressionUnderNewRules))
+format(sum(ResultsNewOper), scientific = FALSE)
