@@ -1,0 +1,47 @@
+RawTiles <- read.csv("day20.csv", sep = "\n", header = FALSE)
+RawTiles <- as.character(RawTiles[,1])
+
+RawTiles <- gsub("Tile ","", RawTiles)
+RawTiles <- gsub(":","", RawTiles)
+
+# Part 1: Finding the Corners
+
+TilesSides <- data.frame(ID = RawTiles[seq(1, length(RawTiles), 11)],
+                         SideA = RawTiles[seq(2, length(RawTiles), 11)],
+                         SideB = RawTiles[seq(11, length(RawTiles), 11)],
+                         SideC = NA, 
+                         SideD = NA, stringsAsFactors = FALSE)
+
+i <- 1
+for (k in seq(2, length(RawTiles), 11)) {
+    SideC <- unname(sapply(RawTiles[k:(k+9)], function(x) substr(x, 1, 1)))
+    TilesSides$SideC[i] <- gsub(", ", "", toString(SideC))
+    SideD <- unname(sapply(RawTiles[k:(k+9)], function(x) substr(x, 10, 10)))    
+    TilesSides$SideD[i] <- gsub(", ", "", toString(SideD))
+    i <- i+1
+}
+rm(i, k, SideC, SideD)
+
+ReverseStringOrder <- function (x) {
+    StrX <- unlist(strsplit(c(x), ""))
+    StrX <- StrX[length(StrX):1]
+    StrX <- gsub(", ", "", toString(StrX))
+    return(StrX) }
+
+TilesSides$SideAFlip <- unname(sapply(TilesSides$SideA, ReverseStringOrder))
+TilesSides$SideBFlip <- unname(sapply(TilesSides$SideB, ReverseStringOrder))
+TilesSides$SideCFlip <- unname(sapply(TilesSides$SideC, ReverseStringOrder))
+TilesSides$SideDFlip <- unname(sapply(TilesSides$SideD, ReverseStringOrder))
+
+TilesMatches <- TilesSides
+TilesMatches[2:ncol(TilesMatches)] <- NA
+
+for (j in 2:ncol(TilesMatches)) {
+for (i in 1:nrow(TilesMatches)) {
+    TilesMatches[i,j] <- sum(TilesSides[-i,2:ncol(TilesSides)] == TilesSides[i,j]) }}
+
+TilesMatches$nMatches <- apply(TilesMatches[,-1], 1, sum)
+TilesMatches$nSidesMatching <- TilesMatches$nMatches /2
+
+Corners <- as.numeric(TilesMatches$ID[TilesMatches$nSidesMatching == 2])
+format(prod(Corners), scientific = FALSE)
