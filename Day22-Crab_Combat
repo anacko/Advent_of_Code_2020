@@ -1,0 +1,40 @@
+Cards <- read.csv("day22.csv", sep = "\n", header = FALSE)
+Cards <- as.character(Cards[,1])
+
+# Part 1: First Match
+
+PlayRound <- function(Cards) {
+    
+    CardsP1 <- as.numeric(Cards[2:(which(Cards == "Player 2:")-1)])
+    CardsP2 <- as.numeric(Cards[(which(Cards == "Player 2:")+1):length(Cards)])
+    
+    RoundPair <- c(CardsP1[1], CardsP2[1])
+    CardsP1 <- CardsP1[-1]
+    CardsP2 <- CardsP2[-1]
+    
+    if (which(RoundPair == max(RoundPair)) == 1){
+    CardsP1 <- c(CardsP1, sort(RoundPair, decreasing = TRUE))
+    } else {
+    CardsP2 <- c(CardsP2, sort(RoundPair, decreasing = TRUE))
+    }
+    
+    Cards_after_round <- c("Player 1:", as.character(CardsP1), "Player 2:", as.character(CardsP2))
+    
+    return(Cards_after_round)
+}
+
+while ((Cards[2] != "Player 2:")&(Cards[length(Cards)] != "Player 2:")){
+    Cards <- PlayRound(Cards) }
+
+print(Cards) # Final Setting with Score = 32366
+
+if (Cards[2] == "Player 2:") {
+    WinnerCards <- as.numeric(Cards[3:length(Cards)])
+    Score <- sum(WinnerCards * (length(WinnerCards):1))
+    print(paste0("Winner 2 wins! Total Score: ", Score))
+} else {
+if (Cards[length(Cards)] == "Player 2:"){
+    WinnerCards <- as.numeric(Cards[2:(length(Cards)-1)])
+    Score <- sum(WinnerCards * (length(WinnerCards):1))
+    print(paste0("Winner 1 wins! Total Score: ", Score))
+} }
