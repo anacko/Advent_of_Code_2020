@@ -1,0 +1,50 @@
+Cups <- 167248359
+Cups <- unlist(strsplit(toString(Cups), ""))
+Cups <- as.numeric(Cups)
+
+OriginalCups <- Cups
+
+PlayRound <- function(Cups) {
+    CurrentCup <- Cups[1]
+    CupsRemoved <- Cups[2:4]
+    CupsRemaining <- Cups[-(2:4)]
+    
+    DestinationCup <- CurrentCup - 1
+    if (DestinationCup < min(Cups)) { DestinationCup <- max(Cups) }
+    
+    while(DestinationCup %in% CupsRemoved) {
+        DestinationCup <- DestinationCup - 1
+        if (DestinationCup < min(Cups)) { DestinationCup <- max(Cups) }
+    }
+
+    PosDestination <- which(CupsRemaining == DestinationCup)
+    PosBefore <-  1:PosDestination
+    if (PosDestination == length(CupsRemaining)) { 
+        PosAfter <- 0
+    } else { 
+        PosAfter <- (PosDestination+1):length(CupsRemaining) 
+    }
+    
+    Cups <- c(CupsRemaining[PosBefore], CupsRemoved, CupsRemaining[PosAfter])
+    Cups <- c(Cups[-1], Cups[1])
+    
+    return(Cups)
+    
+}
+
+Cups <- OriginalCups
+for (n in 1:100) {
+    Cups <- PlayRound(Cups)
+}
+print(Cups) #Final State
+
+CupN1 <- which(Cups == 1)
+
+if (CupN1 == 1) {
+    print(Cups[2:length(Cups)])
+} else {
+if (CupN1 == length(Cups)) {
+    print(Cups[1:(length(Cups)-1)])
+} else {
+    print(c(Cups[(CupN1+1):length(Cups)], Cups[1:(CupN1-1)]))
+}}
